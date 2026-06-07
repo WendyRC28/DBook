@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DBOOK — Iniciar sesión</title>
+<title>DBOOK — Registro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -51,9 +51,17 @@
   }
   .field input::placeholder{color:#aab3bd}
   .field input:focus{outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 4px rgba(45,212,191,.16)}
+  .field input.invalid{border-color:#e88;box-shadow:0 0 0 4px rgba(179,38,30,.10)}
   .toggle-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;
     cursor:pointer;color:var(--muted);padding:6px;border-radius:8px;display:flex;line-height:0}
   .toggle-eye:hover{color:var(--ink)}
+  .err-msg{font-size:12.5px;color:var(--danger-tx);margin-top:6px;display:none}
+  .err-msg.show{display:block}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seg button{font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:12px;
+    border:1.5px solid var(--line);border-radius:11px;background:#fbfcfe;color:#43505d;transition:all .15s}
+  .seg button:hover{border-color:#c6d0db}
+  .seg button.active{border-color:var(--teal);color:#0b5e52;background:rgba(45,212,191,.10);box-shadow:0 0 0 3px rgba(45,212,191,.12)}
   .btn{width:100%;margin-top:8px;font-family:"Outfit",sans-serif;font-weight:600;font-size:16px;color:#fff;
     padding:14px;border:0;border-radius:12px;cursor:pointer;letter-spacing:.3px;
     background:linear-gradient(120deg,var(--blue) 0%, var(--blue-deep) 55%, var(--teal) 165%);
@@ -74,43 +82,128 @@
     </div>
 
     <main class="card">
-      <h1>Iniciar sesión</h1>
-      <p class="sub">Ingresa con tu correo institucional UV</p>
+      <h1>Crear cuenta</h1>
+      <p class="sub">Regístrate con tu correo institucional UV</p>
+
 
       <c:if test="${not empty error}"><div class="banner err">${error}</div></c:if>
-      <c:if test="${not empty exito}"><div class="banner ok">${exito}</div></c:if>
+      <c:if test="${not empty exito}">
+        <div class="banner ok">${exito} <a href="${pageContext.request.contextPath}/login">Iniciar sesión &rarr;</a></div>
+      </c:if>
 
-      <form method="post" action="${pageContext.request.contextPath}/login">
+
+      <div id="banner" class="banner"></div>
+
+      <form id="form" method="post" action="${pageContext.request.contextPath}/registro" novalidate>
+        <div class="field">
+          <label for="nombre">Nombre completo</label>
+          <input id="nombre" name="nombre" type="text" placeholder="Ej. Ana López Martínez"
+                 maxlength="100" autocomplete="name" value="${empty exito ? param.nombre : ''}">
+          <div class="err-msg" id="e-nombre">Escribe tu nombre.</div>
+        </div>
+
         <div class="field">
           <label for="correo">Correo UV</label>
           <input id="correo" name="correo" type="email" placeholder="usuario@uv.mx"
-                 autocomplete="email" value="${param.correo}" required>
+                 autocomplete="email" value="${empty exito ? param.correo : ''}">
+          <div class="err-msg" id="e-correo">Solo se permiten correos institucionales uv.mx</div>
+        </div>
+
+        <div class="field">
+          <label>Soy</label>
+          <div class="seg" id="seg">
+            <button type="button" data-rol="alumno">Alumno</button>
+            <button type="button" data-rol="profesor">Profesor</button>
+          </div>
+          <input type="hidden" name="rol" id="rolInput" value="${empty param.rol ? 'alumno' : param.rol}">
         </div>
 
         <div class="field">
           <label for="contrasena">Contraseña</label>
           <div class="input-shell">
-            <input id="contrasena" name="contrasena" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+            <input id="contrasena" name="contrasena" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
             <button type="button" class="toggle-eye" data-for="contrasena" aria-label="Mostrar contraseña">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
+          <div class="err-msg" id="e-contrasena">La contraseña debe tener al menos 8 caracteres.</div>
         </div>
 
-        <button type="submit" class="btn">Entrar</button>
+        <div class="field">
+          <label for="confirmar">Confirmar contraseña</label>
+          <div class="input-shell">
+            <input id="confirmar" name="confirmar" type="password" placeholder="Repite tu contraseña" autocomplete="new-password">
+            <button type="button" class="toggle-eye" data-for="confirmar" aria-label="Mostrar contraseña">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="err-msg" id="e-confirmar">Las contraseñas no coinciden.</div>
+        </div>
+
+        <button type="submit" class="btn">Crear cuenta</button>
       </form>
 
       <div class="divider"></div>
-      <p class="foot">¿No tienes cuenta? <a href="${pageContext.request.contextPath}/registro">Regístrate aquí</a></p>
+      <p class="foot">¿Ya tienes cuenta? <a href="${pageContext.request.contextPath}/login">Inicia sesión</a></p>
     </main>
   </div>
 
 <script>
+  var rolInput = document.getElementById("rolInput");
+
+  // Activa el botón de rol
+  (function(){
+    var v = rolInput.value || "alumno";
+    document.querySelectorAll("#seg button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.rol === v);
+    });
+  })();
+
+  document.getElementById("seg").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-rol]");
+    if(!b) return;
+    document.querySelectorAll("#seg button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    rolInput.value = b.dataset.rol;
+  });
+
   document.querySelectorAll(".toggle-eye").forEach(function(btn){
     btn.addEventListener("click", function(){
       var inp = document.getElementById(btn.dataset.for);
       inp.type = inp.type === "password" ? "text" : "password";
     });
+  });
+
+  var EMAIL_UV = /^[^\s@]+@([a-z0-9-]+\.)*uv\.mx$/i;
+  var banner = document.getElementById("banner");
+
+  function setErr(id, on){
+    document.getElementById(id).classList.toggle("invalid", on);
+    var m = document.getElementById("e-"+id);
+    if(m) m.classList.toggle("show", on);
+  }
+
+  // Validacion
+  document.getElementById("form").addEventListener("submit", function(ev){
+    banner.className = "banner";
+    var nombre = document.getElementById("nombre").value.trim();
+    var correo = document.getElementById("correo").value.trim();
+    var pass   = document.getElementById("contrasena").value;
+    var pass2  = document.getElementById("confirmar").value;
+
+    var ok = true;
+    setErr("nombre", false); setErr("correo", false); setErr("contrasena", false); setErr("confirmar", false);
+    if(nombre.length < 3){ setErr("nombre", true); ok=false; }
+    if(!EMAIL_UV.test(correo)){ setErr("correo", true); ok=false; }
+    if(pass.length < 8){ setErr("contrasena", true); ok=false; }
+    if(pass2 !== pass || pass2 === ""){ setErr("confirmar", true); ok=false; }
+
+    if(!ok){
+      ev.preventDefault();
+      banner.textContent = "Revisa los campos marcados antes de continuar.";
+      banner.className = "banner err";
+    }
+    // envia a /registro (servlet)
   });
 </script>
 </body>
