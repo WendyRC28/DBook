@@ -7,7 +7,7 @@ import java.util.List;
 
 public class LibroDAO {
 
-    // libro, puntuacion y quien lo publicó
+    // muestra libros quién los publicó y sus calificaciones
     public List<Libro> listar() {
         List<Libro> lista = new ArrayList<>();
         String sql =
@@ -49,5 +49,36 @@ public class LibroDAO {
             Conexion.close(conn);
         }
         return lista;
+    }
+
+    // Inserta un libro nuevo publicado por el usuario
+    public boolean publicar(Libro l) {
+        String sql = "INSERT INTO libro (titulo, autor, carrera, estado, precio, id_usuario) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = Conexion.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, l.getTitulo());
+            ps.setString(2, l.getAutor());
+            ps.setString(3, l.getCarrera());
+            ps.setString(4, l.getEstado());
+            // El precio solo aplica en venta; en intercambio/donación guardamos NULL
+            if ("venta".equals(l.getEstado()) && l.getPrecio() > 0) {
+                ps.setDouble(5, l.getPrecio());
+            } else {
+                ps.setNull(5, java.sql.Types.NUMERIC);
+            }
+            ps.setInt(6, l.getIdUsuario());
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(ps);
+            Conexion.close(conn);
+        }
     }
 }
