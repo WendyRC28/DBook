@@ -87,13 +87,13 @@
 
   /* ── Columna derecha: panel visual (sticky) ── */
   .visual{position:sticky;top:24px;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(8,15,30,.12)}
-  .visual img.banner-img{width:100%;display:block;height:210px;object-fit:cover;object-position:center}
-  .visual-body{background:var(--navy);padding:24px}
-  .visual-body h3{font-family:"Outfit",sans-serif;color:#fff;font-size:16px;font-weight:700;margin-bottom:14px}
+  .visual img.banner-img{width:100%;display:block;object-fit:contain;background:var(--navy)}
+  .visual-body{background:#fff;padding:24px;border-top:3px solid var(--teal)}
+  .visual-body h3{font-family:"Outfit",sans-serif;color:var(--navy);font-size:16px;font-weight:700;margin-bottom:14px}
   .tip{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
   .tip-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:5px;flex-shrink:0}
-  .tip p{font-size:13.5px;color:#b8cfe0;line-height:1.5}
-  .tip p strong{color:#fff}
+  .tip p{font-size:13.5px;color:#4a5970;line-height:1.5}
+  .tip p strong{color:var(--navy)}
 </style>
 </head>
 <body>
