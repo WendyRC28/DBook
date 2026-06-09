@@ -11,12 +11,9 @@ import java.io.IOException;
 @WebServlet("/publicar")
 public class ServletPublicar extends HttpServlet {
 
-    // Muestra el formulario de publicar
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
-
-        // asegurarse de que sea un usuario que si esta logeado
         HttpSession sesion = req.getSession(false);
         if (sesion == null || sesion.getAttribute("usuarioLogueado") == null) {
             res.sendRedirect(req.getContextPath() + "/login");
@@ -25,10 +22,10 @@ public class ServletPublicar extends HttpServlet {
         req.getRequestDispatcher("/publicar.jsp").forward(req, res);
     }
 
-    // Al dar clic en "Publicar"
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
 
         HttpSession sesion = req.getSession(false);
         if (sesion == null || sesion.getAttribute("usuarioLogueado") == null) {
@@ -36,13 +33,12 @@ public class ServletPublicar extends HttpServlet {
             return;
         }
 
-        String titulo  = req.getParameter("titulo");
-        String autor   = req.getParameter("autor");
-        String carrera = req.getParameter("carrera");
-        String estado  = req.getParameter("estado");
+        String titulo    = req.getParameter("titulo");
+        String autor     = req.getParameter("autor");
+        String carrera   = req.getParameter("carrera");
+        String estado    = req.getParameter("estado");
         String precioStr = req.getParameter("precio");
 
-        // Vvalidar ingreso de datos
         if (titulo == null || titulo.trim().isEmpty()
                 || autor == null || autor.trim().isEmpty()
                 || carrera == null || carrera.trim().isEmpty()
@@ -52,14 +48,12 @@ public class ServletPublicar extends HttpServlet {
             return;
         }
 
-        // Construye el objeto Libro
         Libro libro = new Libro();
         libro.setTitulo(titulo.trim());
         libro.setAutor(autor.trim());
         libro.setCarrera(carrera.trim());
         libro.setEstado(estado);
 
-        // solo muestra el precio cuando la opcion es de venta
         if ("venta".equals(estado) && precioStr != null && !precioStr.trim().isEmpty()) {
             try {
                 libro.setPrecio(Double.parseDouble(precioStr.trim()));
@@ -70,14 +64,11 @@ public class ServletPublicar extends HttpServlet {
             }
         }
 
-        // El id_usuario lo toma de quien está en sesión
         Usuario u = (Usuario) sesion.getAttribute("usuarioLogueado");
         libro.setIdUsuario(u.getId());
 
         boolean ok = new LibroDAO().publicar(libro);
-
         if (ok) {
-            // Publicado con éxito
             res.sendRedirect(req.getContextPath() + "/inicio");
         } else {
             req.setAttribute("error", "No se pudo publicar el libro. Intenta de nuevo.");

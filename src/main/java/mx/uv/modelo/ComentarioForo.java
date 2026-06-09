@@ -1,20 +1,19 @@
 package mx.uv.modelo;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 
-public class Comentarioforo implements Serializable {
+public class ComentarioForo implements Serializable {
 
     private int id;
     private String contenido;
-    private Timestamp fecha;
+    private String fecha;
     private int idUsuario;
     private int idEvento;
 
-    // JOIN
+    // Campo del JOIN
     private String nombreUsuario;
 
-    public Comentarioforo() {}
+    public ComentarioForo() {}
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -22,8 +21,8 @@ public class Comentarioforo implements Serializable {
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
 
-    public Timestamp getFecha() { return fecha; }
-    public void setFecha(Timestamp fecha) { this.fecha = fecha; }
+    public String getFecha() { return fecha; }
+    public void setFecha(String fecha) { this.fecha = fecha; }
 
     public int getIdUsuario() { return idUsuario; }
     public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }

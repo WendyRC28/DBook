@@ -7,7 +7,6 @@ import java.util.List;
 
 public class LibroDAO {
 
-    // muestra libros quién los publicó y sus calificaciones
     public List<Libro> listar() {
         List<Libro> lista = new ArrayList<>();
         String sql =
@@ -20,9 +19,7 @@ public class LibroDAO {
                         "LEFT JOIN calificacion c ON c.id_libro = l.id " +
                         "GROUP BY l.id, u.id " +
                         "ORDER BY l.fecha_publicacion DESC";
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection conn = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
             conn = Conexion.getConnection();
             ps = conn.prepareStatement(sql);
@@ -41,22 +38,15 @@ public class LibroDAO {
                 l.setTotalCalificaciones(rs.getInt("total"));
                 lista.add(l);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            Conexion.close(rs);
-            Conexion.close(ps);
-            Conexion.close(conn);
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
+        finally { Conexion.close(rs); Conexion.close(ps); Conexion.close(conn); }
         return lista;
     }
 
-    // Inserta un libro nuevo publicado por el usuario
     public boolean publicar(Libro l) {
         String sql = "INSERT INTO libro (titulo, autor, carrera, estado, precio, id_usuario) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        Connection conn = null;
-        PreparedStatement ps = null;
+        Connection conn = null; PreparedStatement ps = null;
         try {
             conn = Conexion.getConnection();
             ps = conn.prepareStatement(sql);
@@ -64,7 +54,6 @@ public class LibroDAO {
             ps.setString(2, l.getAutor());
             ps.setString(3, l.getCarrera());
             ps.setString(4, l.getEstado());
-            // El precio solo aplica en venta; en intercambio/donación guardamos NULL
             if ("venta".equals(l.getEstado()) && l.getPrecio() > 0) {
                 ps.setDouble(5, l.getPrecio());
             } else {
@@ -73,12 +62,31 @@ public class LibroDAO {
             ps.setInt(6, l.getIdUsuario());
             ps.executeUpdate();
             return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            Conexion.close(ps);
-            Conexion.close(conn);
-        }
+        } catch (SQLException e) { e.printStackTrace(); return false; }
+        finally { Conexion.close(ps); Conexion.close(conn); }
+    }
+
+    public Libro buscarPorId(int id) {
+        String sql = "SELECT id, titulo, autor, carrera, estado, precio, id_usuario FROM libro WHERE id = ?";
+        Connection conn = null; PreparedStatement ps = null; ResultSet rs = null;
+        try {
+            conn = Conexion.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                Libro l = new Libro();
+                l.setId(rs.getInt("id"));
+                l.setTitulo(rs.getString("titulo"));
+                l.setAutor(rs.getString("autor"));
+                l.setCarrera(rs.getString("carrera"));
+                l.setEstado(rs.getString("estado"));
+                l.setPrecio(rs.getDouble("precio"));
+                l.setIdUsuario(rs.getInt("id_usuario"));
+                return l;
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        finally { Conexion.close(rs); Conexion.close(ps); Conexion.close(conn); }
+        return null;
     }
 }

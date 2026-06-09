@@ -21,6 +21,7 @@ public class ServletRegistro extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
 
         String nombre     = req.getParameter("nombre");
         String correo     = req.getParameter("correo");

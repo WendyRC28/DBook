@@ -1,20 +1,22 @@
 package mx.uv.controlador;
 
-import mx.uv.datos.ForoDAO;
-import mx.uv.modelo.Foro;
+import mx.uv.datos.ComentarioForoDAO;
+import mx.uv.datos.EventoDAO;
+import mx.uv.datos.LibroDAO;
+import mx.uv.modelo.ComentarioForo;
+import mx.uv.modelo.Evento;
 import mx.uv.modelo.Libro;
 import mx.uv.modelo.Usuario;
-
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/foro")
 public class ServletForo extends HttpServlet {
 
-    // Muestra los foros disponibles
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
@@ -25,19 +27,29 @@ public class ServletForo extends HttpServlet {
             return;
         }
 
-        ForoDAO dao = new ForoDAO();
-        List<Foro>  foros  = dao.listar();
-        List<Libro> libros = dao.listarLibros();
+        List<Evento> foros = new EventoDAO().listar();
+        List<ComentarioForo> comentarios = new ArrayList<>();
+        int idSel = -1;
 
-        req.setAttribute("foros",  foros);
-        req.setAttribute("libros", libros);
+        String idParam = req.getParameter("id");
+        if (idParam != null && !idParam.isEmpty()) {
+            try {
+                idSel = Integer.parseInt(idParam);
+                comentarios = new ComentarioForoDAO().listarPorEvento(idSel);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        req.setAttribute("foros",       foros);
+        req.setAttribute("comentarios", comentarios);
+        req.setAttribute("idSel",       idSel);
         req.getRequestDispatcher("/foro.jsp").forward(req, res);
     }
 
-    // Crea un foro nuevo desde el formulario
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
+
+        req.setCharacterEncoding("UTF-8");
 
         HttpSession sesion = req.getSession(false);
         if (sesion == null || sesion.getAttribute("usuarioLogueado") == null) {
@@ -45,43 +57,50 @@ public class ServletForo extends HttpServlet {
             return;
         }
 
-        String nombre    = req.getParameter("nombre");
-        String zona      = req.getParameter("zona");
-        String idLibroStr = req.getParameter("idLibro");
+        Usuario u     = (Usuario) sesion.getAttribute("usuarioLogueado");
+        String accion = req.getParameter("accion");
 
-        // Validación de campos obligatorios
-        if (nombre == null || nombre.trim().isEmpty()
-                || zona == null || zona.trim().isEmpty()
-                || idLibroStr == null || idLibroStr.trim().isEmpty()) {
+        if ("crear".equals(accion)) {
+            String nombreLibro = req.getParameter("nombreLibro");
+            String autorLibro  = req.getParameter("autorLibro");
+            String genero      = req.getParameter("genero");
 
-            ForoDAO dao = new ForoDAO();
-            req.setAttribute("error",  "Todos los campos son obligatorios");
-            req.setAttribute("foros",  dao.listar());
-            req.setAttribute("libros", dao.listarLibros());
-            req.getRequestDispatcher("/foro.jsp").forward(req, res);
-            return;
-        }
+            if (nombreLibro == null || nombreLibro.trim().isEmpty()) {
+                res.sendRedirect(req.getContextPath() + "/foro?error=datos");
+                return;
+            }
 
-        // Construye el objeto Foro
-        Foro f = new Foro();
-        f.setNombre(nombre.trim());
-        f.setZona(zona.trim());
-        f.setIdLibro(Integer.parseInt(idLibroStr));
+            Evento ev = new Evento();
+            ev.setNombre(nombreLibro.trim());
+            // Guardamos autor y género en zona separados por ||
+            ev.setZona((autorLibro != null ? autorLibro.trim() : "") +
+                    "||" +
+                    (genero != null ? genero.trim() : ""));
+            ev.setIdUsuario(u.getId());
 
-        // El usuario que crea el foro es el que está en sesión
-        Usuario u = (Usuario) sesion.getAttribute("usuarioLogueado");
-        f.setIdUsuario(u.getId());
+            int nuevoId = new EventoDAO().crear(ev);
+            if (nuevoId > 0) {
+                res.sendRedirect(req.getContextPath() + "/foro?id=" + nuevoId);
+            } else {
+                res.sendRedirect(req.getContextPath() + "/foro?error=crear");
+            }
 
-        boolean ok = new ForoDAO().crear(f);
+        } else if ("comentar".equals(accion)) {
+            String contenido   = req.getParameter("contenido");
+            String idEventoStr = req.getParameter("idEvento");
 
-        if (ok) {
-            res.sendRedirect(req.getContextPath() + "/foro");
-        } else {
-            ForoDAO dao = new ForoDAO();
-            req.setAttribute("error",  "No se pudo crear el foro. Intenta de nuevo.");
-            req.setAttribute("foros",  dao.listar());
-            req.setAttribute("libros", dao.listarLibros());
-            req.getRequestDispatcher("/foro.jsp").forward(req, res);
+            if (contenido == null || contenido.trim().isEmpty() || idEventoStr == null) {
+                res.sendRedirect(req.getContextPath() + "/foro");
+                return;
+            }
+
+            int idEvento = Integer.parseInt(idEventoStr);
+            ComentarioForo c = new ComentarioForo();
+            c.setContenido(contenido.trim());
+            c.setIdUsuario(u.getId());
+            c.setIdEvento(idEvento);
+            new ComentarioForoDAO().agregar(c);
+            res.sendRedirect(req.getContextPath() + "/foro?id=" + idEvento);
         }
     }
 }
