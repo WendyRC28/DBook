@@ -89,4 +89,31 @@ public class LibroDAO {
         finally { Conexion.close(rs); Conexion.close(ps); Conexion.close(conn); }
         return null;
     }
+
+    // Libros publicados por un usuario específico (para el intercambio)
+    public List<Libro> listarPorUsuario(int idUsuario) {
+        List<Libro> lista = new ArrayList<>();
+        String sql = "SELECT id, titulo, autor, carrera, estado, precio, id_usuario " +
+                "FROM libro WHERE id_usuario = ? ORDER BY fecha_publicacion DESC";
+        Connection conn = null; PreparedStatement ps = null; ResultSet rs = null;
+        try {
+            conn = Conexion.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, idUsuario);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Libro l = new Libro();
+                l.setId(rs.getInt("id"));
+                l.setTitulo(rs.getString("titulo"));
+                l.setAutor(rs.getString("autor"));
+                l.setCarrera(rs.getString("carrera"));
+                l.setEstado(rs.getString("estado"));
+                l.setPrecio(rs.getDouble("precio"));
+                l.setIdUsuario(rs.getInt("id_usuario"));
+                lista.add(l);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        finally { Conexion.close(rs); Conexion.close(ps); Conexion.close(conn); }
+        return lista;
+    }
 }

@@ -65,10 +65,23 @@
   <header>
     <img class="logo" src="${pageContext.request.contextPath}/img/dbook-logo.png" alt="DBOOK">
     <div class="hi">Hola, <span>${usuarioLogueado.nombre}</span></div>
-    <a class="salir" href="${pageContext.request.contextPath}/login">Cerrar sesión</a>
+  <a href="${pageContext.request.contextPath}/misSolicitudes"
+     style="color:#bfe9e1;text-decoration:none;font-size:14px;font-weight:600;padding:6px 14px;border-radius:8px;border:1px solid rgba(191,233,225,.3);transition:background .15s"
+     onmouseover="this.style.background='rgba(45,212,191,.12)'"
+     onmouseout="this.style.background='transparent'">
+    📋 Mis solicitudes
+  </a>
+  <a class="salir" href="${pageContext.request.contextPath}/cerrarSesion">Cerrar sesión</a>
   </header>
 
+
+
   <div class="container">
+        <c:if test="${param.msg == 'transaccion'}">
+          <div style="background:#e6f7f1;color:#0f7a5e;padding:12px 18px;border-radius:12px;margin-bottom:20px;font-size:14px;font-weight:600;border:1.5px solid rgba(45,212,191,.3)">
+            ✓ Transacción registrada. El publicador se comunicará contigo pronto.
+          </div>
+        </c:if>
 
     <%-- Menú: cada tarjeta ES la imagen, ya trae título y descripción dentro --%>
     <div class="menu">
@@ -123,6 +136,20 @@
                 <div class="precio">$ ${libro.precio}</div>
               </c:if>
               <div class="meta">Publicado por ${libro.nombreUsuario}</div>
+                            <c:if test="${libro.idUsuario ne usuarioLogueado.id}">
+                              <c:if test="${libro.estado == 'venta'}">
+                                <a href="${pageContext.request.contextPath}/transaccion?id=${libro.id}&tipo=compra"
+                                   style="display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:#9a6b00;text-decoration:none;padding:6px 12px;border-radius:8px;border:1.5px solid rgba(180,120,0,.25);background:rgba(180,120,0,.06);transition:background .15s">
+                                  💲 Comprar
+                                </a>
+                              </c:if>
+                              <c:if test="${libro.estado == 'intercambio'}">
+                                <a href="${pageContext.request.contextPath}/transaccion?id=${libro.id}&tipo=intercambio"
+                                   style="display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:#1652d6;text-decoration:none;padding:6px 12px;border-radius:8px;border:1.5px solid rgba(22,82,214,.2);background:rgba(22,82,214,.06);transition:background .15s">
+                                  🔄 Intercambiar
+                                </a>
+                              </c:if>
+                            </c:if>
             </div>
           </c:forEach>
         </div>
